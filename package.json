@@ -1,0 +1,25 @@
+{
+  "name": "devtinder-backend",
+  "version": "1.0.0",
+  "description": "Tinder application for developers",
+  "main": "index.js",
+  "scripts": {
+   "start": "node src/app.js",
+   "dev": "nodemon src/app.js"
+  },
+  "keywords": [
+    "node",
+    "js",
+    "Javascript",
+    "Express",
+    "js",
+    "Mongodb",
+    "React"
+  ],
+  "author": "Prathibha A S",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.0",
+    "nodemon": "^3.1.7"
+  }
+}
