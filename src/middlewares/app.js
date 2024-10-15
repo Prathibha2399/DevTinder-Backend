@@ -103,11 +103,11 @@ app.patch('/user', async (req,res) => {
   const data = req.body;    // unique keys not matching with dB schema will be neglected. eg, in schema i have key as _id but while calling i have used it as id key....so this will not replace.
 
   try{
-    const user = await User.findOneAndUpdate({_id: userId}, data, {returnDocument: 'after'});  // this will now explicitly return after updating the filed.
+    const user = await User.findOneAndUpdate({_id: userId}, data, {returnDocument: 'after', runValidators: true});  // this will now explicitly return after updating the filed.
     // console.log(user);  // bydefault it will return the entries of field/document before updating.
     res.send("Updated successfully!.....");
   }catch(err){
-    res.status(400).send("Error in updating the data:", err.message);
+    res.status(400).send("Error in updating the data:" + err.message);
   }
 })
 
