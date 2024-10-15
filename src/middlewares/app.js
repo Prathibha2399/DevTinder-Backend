@@ -78,6 +78,36 @@ app.post('/signup', async (req, res) => {
   }
 });
 
+app.post('/login', async (req,res) => {
+  try{
+
+    // validations(req);
+
+    const {email, password} = req.body;
+
+    console.log(email, password)
+
+    //check whether email is registered or not
+    const user = await User.find({email: email});    // findOne or find anything can work here as it would return one entry since we have given unique validations under schema.
+
+    if(!user){
+      throw new Error("Invalid Credentials!....")  // never expose too much info abt validations.
+    }
+
+    const passwordCheck = await bcrypt.compare(password, userOne.password);
+    // const passwordCheck = await bcrypt.compare(password, user[0].password); if find() is used as results would be in array of obj format.
+
+    if(!passwordCheck){
+      throw new Error("Invalid Credentials!....");
+    }else{
+      res.send("Login Successfull!....");
+    }
+
+  }catch(err){
+    res.status(400).send('Error in login: ' + err.message);
+  }
+})
+
 // get perticular user data, eg: user whose email matches to prajwalbhat854@gmail.com
 app.get('/user', async (req, res) => {
   const userData = req.body.eid; // i would be requesting for... must match req object key. not necessarly schemas key.....
