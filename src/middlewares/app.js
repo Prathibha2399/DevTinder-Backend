@@ -4,6 +4,10 @@ const connectDB = require('../configarations/database');
 
 const User = require('../models/user');
 
+const { validations } = require('../utils/validation');
+
+const bcrypt = require('bcrypt');
+
 const app = express();
 
 app.use(express.json()); // created a middleware so that all js req will be handled as json req.
@@ -28,11 +32,40 @@ app.post('/signup', async (req, res) => {
   }); */
 
   // Since json is handled, -> to make req more dynamic;
-  const userObj = new User(req.body);
+
+  // once the user hits sign-up api, 1st thing is to validate the request. Then encrypt the password later store the data into dB.
 
   // wrap inside try-catch to handle errors gracefully. if incase post req might not have sent the data, then error messages would be an warn prop instead of getting random error values.
 
   try {
+    validations(req);
+
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      phoneNo,
+      age,
+      gender,
+      profile,
+      about,
+    } = req.body;
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // const userObj = new User(req.body);  // but this is bad way of creating the instances so do like the one in the above.
+
+    const userObj = new User({
+      firstName,
+      lastName,
+      email,
+      password: passwordHash,
+      phoneNo,
+      age,
+      gender,
+      profile,
+      about,
+    });
     // save() again gives a promise obj, so handle using await async
     await userObj.save(); // to pass or save onto the dB
 
@@ -120,7 +153,7 @@ app.patch('/user/:userId', async (req, res) => {
     if (!isUpdateAllowed) {
       throw new Error('Updates not allowed!......');
     }
-    if(data.skills.length > 10){
+    if (data.skills.length > 10) {
       throw new Error('Skills cannot be more than 10......');
     }
     const user = await User.findOneAndUpdate({ _id: userId }, data, {

@@ -19,6 +19,7 @@
   "author": "Prathibha A S",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "express": "^4.21.0",
     "mongoose": "^8.7.1",
     "nodemon": "^3.1.7",
