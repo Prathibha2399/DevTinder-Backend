@@ -41,7 +41,7 @@ app.post('/signup', async (req, res) => {
     res.send('User data stored successfully!........');
     console.log(req.body);
   } catch (err) {
-    res.status(400).send('Error in storing the data: ', err.message);
+    res.status(400).send('Error in storing the data: ' + err.message);
   }
 });
 
@@ -85,7 +85,7 @@ app.delete('/user', async (req, res) => {
 
     //const user = await User.findOneAndDelete(userId); // this can accept anything, since key is not passed as per schema, it will delete 1st entry
 
-    const user2 = await User.findOneAndDelete({firstName : userId}); // this can accept anything as a unique key. but key must match schema
+    const user2 = await User.findOneAndDelete({ firstName: userId }); // this can accept anything as a unique key. but key must match schema
 
     // console.log(user2);  //stores deleted entry
     res.send('Deleted successfully!.....');
@@ -94,22 +94,45 @@ app.delete('/user', async (req, res) => {
   }
 });
 
-
 // update the user from existing database
-app.patch('/user', async (req,res) => {
+app.patch('/user/:userId', async (req, res) => {
   //operations are similar to delete, like differnece b/w findOneAndUpdate for generalized way, and findByIdAndUpdate for perticual id unique key
 
-  const userId = req.body.id;
-  const data = req.body;    // unique keys not matching with dB schema will be neglected. eg, in schema i have key as _id but while calling i have used it as id key....so this will not replace.
+  //const userId = req.body.id;  // best practice of fetching userId is from params
+  const userId = req.params?.userId;
+  const data = req.body; // unique keys not matching with dB schema will be neglected. eg, in schema i have key as _id but while calling i have used it as id key....so this will not replace.
 
-  try{
-    const user = await User.findOneAndUpdate({_id: userId}, data, {returnDocument: 'after', runValidators: true});  // this will now explicitly return after updating the filed.
+  try {
+    // API level Data validations
+    const ALLOWED_UPDATES = [
+      'profile',
+      'age',
+      'gender',
+      'password',
+      'phoneNo',
+      'about',
+      'skills',
+    ];
+
+    const isUpdateAllowed = Object.keys(data).every((k) =>
+      ALLOWED_UPDATES.includes(k)
+    );
+    if (!isUpdateAllowed) {
+      throw new Error('Updates not allowed!......');
+    }
+    if(data.skills.length > 10){
+      throw new Error('Skills cannot be more than 10......');
+    }
+    const user = await User.findOneAndUpdate({ _id: userId }, data, {
+      returnDocument: 'after',
+      runValidators: true,
+    }); // this will now explicitly return after updating the filed.
     // console.log(user);  // bydefault it will return the entries of field/document before updating.
-    res.send("Updated successfully!.....");
-  }catch(err){
-    res.status(400).send("Error in updating the data:" + err.message);
+    res.send('Updated successfully!.....');
+  } catch (err) {
+    res.status(400).send('Error in updating the data:' + err.message);
   }
-})
+});
 
 connectDB()
   .then(() => {
