@@ -8,9 +8,15 @@ const { validations } = require('../utils/validation');
 
 const bcrypt = require('bcrypt');
 
+const cookieParser = require('cookie-parser');
+
+const jwt = require('jsonwebtoken');
+
 const app = express();
 
 app.use(express.json()); // created a middleware so that all js req will be handled as json req.
+
+app.use(cookieParser()); // middleware to read the cookies.
 
 app.post('/signup', async (req, res) => {
   /* this could also be written as 
@@ -72,41 +78,76 @@ app.post('/signup', async (req, res) => {
     // always send res back
 
     res.send('User data stored successfully!........');
-    console.log(req.body);
+    // console.log(req.body);
   } catch (err) {
     res.status(400).send('Error in storing the data: ' + err.message);
   }
 });
 
-app.post('/login', async (req,res) => {
-  try{
-
+app.post('/login', async (req, res) => {
+  try {
     // validations(req);
 
-    const {email, password} = req.body;
+    const { email, password } = req.body;
 
-    console.log(email, password)
+    // console.log(email, password);
 
     //check whether email is registered or not
-    const user = await User.find({email: email});    // findOne or find anything can work here as it would return one entry since we have given unique validations under schema.
+    const user = await User.findOne({ email: email }); // findOne or find anything can work here as it would return one entry since we have given unique validations under schema.
 
-    if(!user){
-      throw new Error("Invalid Credentials!....")  // never expose too much info abt validations.
+    if (!user) {
+      throw new Error('Invalid Credentials!....'); // never expose too much info abt validations.
     }
 
-    const passwordCheck = await bcrypt.compare(password, userOne.password);
+    const passwordCheck = await bcrypt.compare(password, user.password);
     // const passwordCheck = await bcrypt.compare(password, user[0].password); if find() is used as results would be in array of obj format.
 
-    if(!passwordCheck){
-      throw new Error("Invalid Credentials!....");
-    }else{
-      res.send("Login Successfull!....");
-    }
+    // To provide Authentications, when user is there and logged in
+    if (passwordCheck) {
+      // 1. create a JWT Token
+      const token = await jwt.sign({_id: user._id}, 'DEV@Tinder#my'); //here hiding my userid(unique) under the token, which later will be retrived.
 
-  }catch(err){
+      // 2. create a cookie for the token. (<cookie name; here wrapper of token>, <token value>)
+      // res.cookie("token", 'esdrftyuiokjhgfdsxdcfvgbhnjkmkjhgfd');
+      res.cookie('token', token);
+
+      res.send('Login Successfull!....');
+    } else {
+      throw new Error('Invalid Credentials!....');
+    }
+  } catch (err) {
     res.status(400).send('Error in login: ' + err.message);
   }
-})
+});
+
+app.get('/profile', async (req, res) => {
+  try {
+    // check whether cookie => token is present or not
+    const { token } = req.cookies; // cookies are created once logged in and sent back to browsers. now upon every req, cookies needs to be checked. // destructure by name as passed while creating cookies with name.
+
+    if (token) {
+      // verify the token => destructure/ retrive key
+      const decodejwt = await jwt.verify(token , 'DEV@Tinder#my') // secrete key passed
+
+      // console.log(decodejwt) this has data of hidden field passed
+
+      // destruct the hidden field, here user's id (std practice)
+      const {_id} = decodejwt;
+
+      const profileData = await User.findById(_id);
+
+      if(profileData){
+        res.send(profileData);
+      }else{
+        throw new Error("Bad credentials");
+      }
+    } else {
+      throw new Error('Tokens not available!....');
+    }
+  } catch (err) {
+    res.status(400).send('Error in login: ' + err.message);
+  }
+});
 
 // get perticular user data, eg: user whose email matches to prajwalbhat854@gmail.com
 app.get('/user', async (req, res) => {

@@ -81,7 +81,17 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// once schema is defined with required fields; now create the model; using mongoose model method
+// once schema is defined with required fields; now create the model; using mongoose model method.....(<model name>, <schema created as name>)
 const User = mongoose.model('User', userSchema);
 
 module.exports = User; // it could also be written as module.exports = mongoose.model('User', userSchema); directly
+
+// by default strict mode for schema will be true, hence it will not allow additional fields which are requested through URL and when schema fields are not defined; to be updated/ appended onto database.
+// to allow additional fields to be updated/ appended onto database, set strict mode to false
+/* const userSchema = new mongoose.Schema({...},{
+strict: false;
+}) */
+
+
+// Or this can also be done at api query level ;
+// await userObj.save({strict:false})
