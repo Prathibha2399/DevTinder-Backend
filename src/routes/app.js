@@ -12,7 +12,7 @@ const cookieParser = require('cookie-parser');
 
 const jwt = require('jsonwebtoken');
 
-const {userAuth} = require('../middlewares/auth')
+const { userAuth } = require('../middlewares/auth');
 
 const app = express();
 
@@ -107,11 +107,13 @@ app.post('/login', async (req, res) => {
     // To provide Authentications, when user is there and logged in
     if (passwordCheck) {
       // 1. create a JWT Token
-      const token = await jwt.sign({_id: user._id}, 'DEV@Tinder#my'); //here hiding my userid(unique) under the token, which later will be retrived.
+      const token = await jwt.sign({ _id: user._id }, 'DEV@Tinder#my', {expiresIn : '1d'}); //here hiding my userid(unique) under the token, which later will be retrived.
+      /* tokens take options as 3rd parameter, this will now ensure to expire the token  -> creating a session.
+      it would take pure numeric values like {expiresIn : "60*60" or like the above 1d 1h...*/
 
       // 2. create a cookie for the token. (<cookie name; here wrapper of token>, <token value>)
       // res.cookie("token", 'esdrftyuiokjhgfdsxdcfvgbhnjkmkjhgfd');
-      res.cookie('token', token);
+      res.cookie('token', token, {expires: new Date(Date.now() + 1*60*60*1000), httpOnly: true});  // set expiration and secure connections
 
       res.send('Login Successfull!....');
     } else {
@@ -147,15 +149,14 @@ app.get('/profile', userAuth, async (req, res) => {
       throw new Error('Tokens not available!....');
     } */
 
+    // Since Auth middleware is created, now we can use it directly
+    const user = req.user;
 
-      // Since Auth middleware is created, now we can use it directly
-      const user = req.user;
-
-      if(user){
-        res.send(user);
-      }else{
-        throw new Error("Bad credentials");
-      }
+    if (user) {
+      res.send(user);
+    } else {
+      throw new Error('Bad credentials');
+    }
   } catch (err) {
     res.status(400).send('Error in login: ' + err.message);
   }
@@ -251,24 +252,22 @@ app.patch('/user/:userId', async (req, res) => {
 });
 
 // Sending the connection request
-app.post('/sendRequest' ,userAuth, (req,res) => {
-try{
-// userAuth would have given perticular user who has logged in
+app.post('/sendRequest', userAuth, (req, res) => {
+  try {
+    // userAuth would have given perticular user who has logged in
 
-const user = req.user;
-if(user){
-  const {firstName} = user;
+    const user = req.user;
+    if (user) {
+      const { firstName } = user;
 
-  res.send(`${firstName} sent a connection request!....`);
-
-}else{
-  throw new Error("Invalid Login!.....")
-}
-
-}catch(err){
-  res.status(404).send("Invalid request" + err.message)
-}
-})
+      res.send(`${firstName} sent a connection request!....`);
+    } else {
+      throw new Error('Invalid Login!.....');
+    }
+  } catch (err) {
+    res.status(404).send('Invalid request' + err.message);
+  }
+});
 
 connectDB()
   .then(() => {
