@@ -12,6 +12,8 @@ const cookieParser = require('cookie-parser');
 
 const jwt = require('jsonwebtoken');
 
+const {userAuth} = require('../middlewares/auth')
+
 const app = express();
 
 app.use(express.json()); // created a middleware so that all js req will be handled as json req.
@@ -120,9 +122,9 @@ app.post('/login', async (req, res) => {
   }
 });
 
-app.get('/profile', async (req, res) => {
+app.get('/profile', userAuth, async (req, res) => {
   try {
-    // check whether cookie => token is present or not
+    /* // check whether cookie => token is present or not
     const { token } = req.cookies; // cookies are created once logged in and sent back to browsers. now upon every req, cookies needs to be checked. // destructure by name as passed while creating cookies with name.
 
     if (token) {
@@ -143,7 +145,17 @@ app.get('/profile', async (req, res) => {
       }
     } else {
       throw new Error('Tokens not available!....');
-    }
+    } */
+
+
+      // Since Auth middleware is created, now we can use it directly
+      const user = req.user;
+
+      if(user){
+        res.send(user);
+      }else{
+        throw new Error("Bad credentials");
+      }
   } catch (err) {
     res.status(400).send('Error in login: ' + err.message);
   }
@@ -237,6 +249,26 @@ app.patch('/user/:userId', async (req, res) => {
     res.status(400).send('Error in updating the data:' + err.message);
   }
 });
+
+// Sending the connection request
+app.post('/sendRequest' ,userAuth, (req,res) => {
+try{
+// userAuth would have given perticular user who has logged in
+
+const user = req.user;
+if(user){
+  const {firstName} = user;
+
+  res.send(`${firstName} sent a connection request!....`);
+
+}else{
+  throw new Error("Invalid Login!.....")
+}
+
+}catch(err){
+  res.status(404).send("Invalid request" + err.message)
+}
+})
 
 connectDB()
   .then(() => {
