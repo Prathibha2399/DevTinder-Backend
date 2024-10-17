@@ -101,13 +101,18 @@ app.post('/login', async (req, res) => {
       throw new Error('Invalid Credentials!....'); // never expose too much info abt validations.
     }
 
-    const passwordCheck = await bcrypt.compare(password, user.password);
+    const passwordCheck = await user.validatePassword(password);
+    /*--------------------------------------------------------------------*/
+    /* const passwordCheck = await bcrypt.compare(password, user.password); */
+    /*--------------------------------------------------------------------*/
     // const passwordCheck = await bcrypt.compare(password, user[0].password); if find() is used as results would be in array of obj format.
 
     // To provide Authentications, when user is there and logged in
     if (passwordCheck) {
       // 1. create a JWT Token
-      const token = await jwt.sign({ _id: user._id }, 'DEV@Tinder#my', {expiresIn : '1d'}); //here hiding my userid(unique) under the token, which later will be retrived.
+         const token = await user.getjwtToken();
+      /*--------------------------------------------------------------------*/
+      /* const token = await jwt.sign({ _id: user._id }, 'DEV@Tinder#my', {expiresIn : '1d'}); */ //here hiding my userid(unique) under the token, which later will be retrived.
       /* tokens take options as 3rd parameter, this will now ensure to expire the token  -> creating a session.
       it would take pure numeric values like {expiresIn : "60*60" or like the above 1d 1h...*/
 

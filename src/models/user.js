@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
 
 // this can also be written as import {Schema} =  mongoose; a destructuring way
 
@@ -81,17 +83,49 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+
+
+/*--------------------------------------------------------------------*/
+//practice => to create SCHEMA METHODS
+
+userSchema.methods.getjwtToken = async function () {
+  const user = this; // this is not associated arrow func
+  const token = await jwt.sign({ _id: user._id }, 'DEV@Tinder#my', {
+    expiresIn: '1d',
+  });
+  return token;
+};
+
+
+userSchema.methods.validatePassword = async function(passwordInput){
+  const user = this;
+  const isPasswordValid = await bcrypt.compare(passwordInput ,user.password);
+
+  return isPasswordValid;
+}
+
+
+/*--------------------------------------------------------------------*/
+
 // once schema is defined with required fields; now create the model; using mongoose model method.....(<model name>, <schema created as name>)
 const User = mongoose.model('User', userSchema);
 
 module.exports = User; // it could also be written as module.exports = mongoose.model('User', userSchema); directly
 
+
+
+
+
+
+
+
+
+/*--------------------------------------------------------------------*/
 // by default strict mode for schema will be true, hence it will not allow additional fields which are requested through URL and when schema fields are not defined; to be updated/ appended onto database.
 // to allow additional fields to be updated/ appended onto database, set strict mode to false
 /* const userSchema = new mongoose.Schema({...},{
 strict: false;
 }) */
-
 
 // Or this can also be done at api query level ;
 // await userObj.save({strict:false})
