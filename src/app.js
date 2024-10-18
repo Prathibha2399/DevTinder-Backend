@@ -1,53 +1,30 @@
-// creating a server
-
+const cookieParser = require('cookie-parser');
 const express = require('express');
+const User = require('./models/user');
+const connectDB = require('./configarations/database');
+const authRouter = require('./routes/authRoute');
+const profileRouter = require('./routes/profileRoute')
+const requestRouter = require('./routes/requestRoute')
+
 
 const app = express();
 
-/* app.use(function (req, res) {
-  // or can use arrow function ((req,res) => {})
-  res.send('Hello Everyone!....');                   // hardcoded, whatever req it might be we rae sending hello for all request.
-}); */
+app.use(express.json());
+app.use(cookieParser());
 
-/* app.use("/", (req, res) => {
-    res.send("Hello Everyone! from homepage");
-})
+/* Routes */
+app.use('/', authRouter);
+app.use('/', profileRouter);
+app.use('/', requestRouter);
 
-app.use("/test", (req, res) => {
-    res.send("Hello Everyone! from test url");
-})
 
-app.use("/test/xyz", (req, res) => {
-  res.send("Hello Everyone! from test xyz url");
-}) */
+connectDB().then(() => {console.log('DB connection established!..');
+  app.listen(3000, () => {
+    console.log("Server running successfully!...")
+  })
+}).catch((err) => console.error('Failed to connect dB :' + err.message))
 
-app.get('/test/xyz', (req, res) => {
-  res.send('Hello Everyone! from get method test xyz url');
-});
 
-app.get('/test', (req, res) => {
-  res.send('Hello Everyone! from get method test url');
-});
 
-app.get('/hello', (req, res) => {
-  console.log(req.query);
-  res.send('Hello Everyone! from get method hello url and query parameter');
-});
 
-app.get('/hello/:userId/:name/:password', (req, res) => {
-  console.log(req.params);
-  console.log(req.query);
-  res.send(
-    'Hello Everyone! from get method hello url and params and query parameters'
-  );
-});
 
-app.get('/hello/:userId/:name/:password', (req, res) => {
-  console.log(req.params);
-  res.send('Hello Everyone! from get method hello url and params');
-});
-
-app.listen(3000, () => {
-  console.log('Server is running on port 3000');
-  console.log('Hello');
-});

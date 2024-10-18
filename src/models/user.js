@@ -84,7 +84,6 @@ const userSchema = new mongoose.Schema(
 );
 
 
-
 /*--------------------------------------------------------------------*/
 //practice => to create SCHEMA METHODS
 
