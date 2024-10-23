@@ -1,7 +1,7 @@
 // User Authentications
 
 const express = require('express');
-const validations = require('../utils/validation');
+const {validateSignup} = require('../utils/validation');
 const bcrypt = require('bcrypt');
 const User = require('../models/user');
 
@@ -10,7 +10,7 @@ const authRouter = express.Router();
 /* Sign-up route */
 authRouter.post('/signup', async (req, res) => {
   try {
-    validations(req);
+    validateSignup(req);
 
     const {
       firstName,
@@ -77,6 +77,12 @@ authRouter.post('/login', async (req, res) => {
     res.status(400).send('Error in login: ' + err.message);
   }
 });
+
+
+/* Logout Route */
+authRouter.post('/logout' , (req,res) => {
+  res.cookie("token", null, {expires: new Date(Date.now())}).send('Logged Out, Login to continue!...')
+})
 
 
 module.exports = authRouter;
