@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
+const User = require('./user');
 
 const connectRequestSchema = new mongoose.Schema(
   {
     fromId: {
       type: mongoose.Schema.Types.ObjectId,
+      ref: User,    // to join the User model so that we can fetch the User models data through fromId of connectRequest model
       required: true,
     },
     toId: {
