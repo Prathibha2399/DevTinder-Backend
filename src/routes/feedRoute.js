@@ -11,6 +11,13 @@ feedRouter.get('/user/feeds', userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
 
+    /* PAGINATION */
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 1;
+    limit = limit > 50 ? 50 : limit;
+
+    const size = (page - 1) * limit;
+
     // avoid -> all connected, requested and oneselfs data.
 
     // 1. find all connected/ignored feeds of loggedIn users. logged in user can be sender or might be a receiver
@@ -31,7 +38,7 @@ feedRouter.get('/user/feeds', userAuth, async (req, res) => {
         { _id: { $nin: Array.from(hideFeeds) } },
         { _id: { $ne: loggedInUser._id } },
       ],
-    }).select(USERS_SAFE_DATA);
+    }).select(USERS_SAFE_DATA).size(size).limit(limit);
 
     if (!usersFeed) {
       throw new Error('Failed to display you feeds!....');
