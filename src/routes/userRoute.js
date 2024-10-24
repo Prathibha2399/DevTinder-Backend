@@ -50,10 +50,10 @@ userRouter.get('/user/connection', userAuth, async (req, res) => {
 
     //in order to get only from users data
     const data = allConnected.map(row => {
-        if(row.fromId.toString() === loggedInUser._id.toString()){
-            return row.fromId;
+        if(row.fromId._id.toString() === loggedInUser._id.toString()){
+            return row.toId;
         }
-        return row.toId;
+        return row.fromId;
     });
 
         res.json({data})
